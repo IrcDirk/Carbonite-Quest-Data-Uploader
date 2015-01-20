@@ -30,6 +30,11 @@ Opt("WinTitleMatchMode", 3)
 $curl =  @TempDir & "\curl.tmp"
 FileInstall(".\curl.exe", $curl, 1)
 
+Global $Shutdown = False
+_SetProcessShutdownParameters(0x03FF)
+GUIRegisterMsg($WM_QUERYENDSESSION, 'WM_QUERYENDSESSION')
+GUIRegisterMsg($WM_ENDSESSION, 'WM_ENDSESSION')
+
 If _StartupFolder_Exists("Carbonite Quest Data Uploader") == 0 Then
 	_StartupFolder_Install("Carbonite Quest Data Uploader")
 EndIf
@@ -91,9 +96,10 @@ $event = True
 
 While 1
 	;If $event == True Then
-   If(WinExists($WOWWinName) == 1) Then
+   If(WinExists($WOWWinName) == 1 And $Shutdown == False) Then
 	  _FileSysMonDirEventHandler()
    Else
+	   If $Shutdown == True Then ExitLoop
 	   Sleep(100)
    EndIf
    If(WinExists($WOWWinName) == 0 And $upFiles <> "") Then
@@ -203,4 +209,22 @@ Func _WinGetDetails($sTitle, $sText = '') ; Based on code of _WinGetPath by Gary
         Next
     EndIf
     Return SetError(1, 0, $aReturn)
+EndFunc
+
+Func WM_QUERYENDSESSION($hWnd, $Msg, $wParam, $lParam)
+    $Shutdown = True
+    Return True
+EndFunc
+
+Func WM_ENDSESSION($hWnd, $Msg, $wParam, $lParam)
+    Exit
+    Return 0
+EndFunc
+
+Func _SetProcessShutdownParameters($dwLevel, $dwFlags=0)
+    ; <a href='http://msdn.microsoft.com/en-us/library/ms686227%28VS.85%29.aspx' class='bbc_url' title='External link' rel='nofollow external'>http://msdn.microsoft.com/en-us/library/ms686227%28VS.85%29.aspx</a>
+    ; Prog@ndy
+    Local $aResult = DllCall("Kernel32.dll", "int", "SetProcessShutdownParameters", "dword", $dwLevel, "dword", $dwFlags)
+    If @error Then Return SetError(1,0,0)
+    Return $aResult[0]
 EndFunc
