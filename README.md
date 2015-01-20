@@ -1,3 +1,3 @@
 # Carbonite-Quest-Data-Uploader
 
-Read: http://www.wowinterface.com/forums/showpost.php?p=305177&postcount=6
+Read: http://www.wowinterface.com/forums/showthread.php?t=51661
